@@ -9,14 +9,16 @@ namespace Harbourline.Connect.Functions.Functions;
 /// GET /api/health – a liveness check that does not touch Dataverse,
 /// so it stays green even when a downstream system is unavailable.
 /// </summary>
-public sealed class HealthFunction(HealthService health)
+// <listing:health-function>
+public sealed class HealthFunction(HealthService health)    // <1>
 {
-    [Function("Health")]
+    [Function("Health")]                                    // <2>
     public IActionResult Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get",
-            Route = "health")] HttpRequest request)
+            Route = "health")] HttpRequest request)         // <3>
     {
         ArgumentNullException.ThrowIfNull(request);
-        return new OkObjectResult(health.GetStatus());
+        return new OkObjectResult(health.GetStatus());      // <4>
     }
 }
+// </listing:health-function>
