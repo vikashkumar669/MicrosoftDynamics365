@@ -12,9 +12,10 @@ namespace Harbourline.Connect.Core.Dataverse;
 /// </summary>
 public static class DataverseClientFactory
 {
+    // <listing:dataverse-factory>
     public static ServiceClient Create(
         DataverseOptions options,
-        TokenCredential credential,
+        TokenCredential credential,                    // <1>
         ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -23,12 +24,13 @@ public static class DataverseClientFactory
         var instanceUrl = new Uri(options.Url);
         string[] scopes =
         [
-            instanceUrl.GetLeftPart(UriPartial.Authority) + "/.default"
+            instanceUrl.GetLeftPart(UriPartial.Authority)
+                + "/.default"                          // <2>
         ];
 
         return new ServiceClient(
             instanceUrl,
-            async _ =>
+            async _ =>                                 // <3>
             {
                 var token = await credential
                     .GetTokenAsync(
@@ -37,7 +39,8 @@ public static class DataverseClientFactory
                     .ConfigureAwait(false);
                 return token.Token;
             },
-            useUniqueInstance: true,
+            useUniqueInstance: true,                   // <4>
             logger: logger);
     }
+    // </listing:dataverse-factory>
 }
