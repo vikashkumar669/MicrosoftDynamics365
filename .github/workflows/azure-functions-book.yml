@@ -1,0 +1,50 @@
+# Builds and tests the companion code for the book
+# "Azure Functions for Microsoft Dynamics 365 & Power Platform".
+name: azure-functions-book
+
+on:
+  push:
+    branches: [main, 'book/**']
+    paths:
+      - 'Azure functions/**'
+      - '.github/workflows/azure-functions-book.yml'
+  pull_request:
+    paths:
+      - 'Azure functions/**'
+      - '.github/workflows/azure-functions-book.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: 'Azure functions'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: 'Azure functions/global.json'
+
+      - name: Restore
+        run: dotnet restore HarbourlineConnect.slnx
+
+      - name: Build
+        run: dotnet build HarbourlineConnect.slnx -c Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test HarbourlineConnect.slnx -c Release --no-build
+          --logger "console;verbosity=normal"
+
+      # Informational: lists packages with newer versions so the book's
+      # version statement can be kept current. Never fails the build.
+      - name: Outdated package report
+        if: always()
+        continue-on-error: true
+        run: dotnet list HarbourlineConnect.slnx package --outdated

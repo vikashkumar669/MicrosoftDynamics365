@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Harbourline.Connect.Contracts/Harbourline.Connect.Contracts.csproj" />
+    <Project Path="src/Harbourline.Connect.Core/Harbourline.Connect.Core.csproj" />
+    <Project Path="src/Harbourline.Connect.Functions/Harbourline.Connect.Functions.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Harbourline.Connect.UnitTests/Harbourline.Connect.UnitTests.csproj" />
+  </Folder>
+</Solution>
