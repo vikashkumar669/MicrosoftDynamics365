@@ -51,6 +51,7 @@ One idea per callout, 60 words or fewer, no more than three callouts per page.
 ### 5.1 Diagrams
 
 - Authored in Mermaid (`figures/chNN/*.mmd`, rendered by the build with `build/mermaid-config.json`) or draw.io for icon-based architecture.
+- **Canvas size: 640 units wide** (`viewBox="0 0 640 H"`), which maps to the 5.98 in text column at about 0.67 pt per unit. Minimum text size 11 units (7.4 pt in print); body labels 12.5 units; titles 14–15 units. A wider canvas shrinks every label below a readable size.
 - One message per diagram, stated in the caption: "The function never holds a secret: Entra ID issues tokens to its managed identity", not "Architecture".
 - Left to right for data flow; top to bottom for hierarchies.
 - Colours: navy boxes for our code, white boxes for Microsoft services, sky-tint for external systems; dashed borders for authentication boundaries; amber arrows for failure and retry paths.
