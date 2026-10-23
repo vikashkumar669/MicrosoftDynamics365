@@ -44,12 +44,12 @@ jobs:
       - name: Test
         run: |
           set -o pipefail
-          dotnet test HarbourlineConnect.slnx -c Release --no-build \
-            --logger "console;verbosity=normal" 2>&1 \
+          dotnet test --solution HarbourlineConnect.slnx \
+            -c Release --no-build 2>&1 \
             | tee test.log \
             || { grep -E 'error|Error|Failed|failed' test.log \
                  | head -20 | sed 's/^/::error title=Test::/'; exit 1; }
-          grep -E 'Passed!|Failed!|Total tests' test.log \
+          grep -iE 'passed|failed|total|succeeded' test.log | tail -5 \
             | sed 's/^/::notice title=Tests::/' || true
 
       # Informational: lists packages with newer versions so the book's
