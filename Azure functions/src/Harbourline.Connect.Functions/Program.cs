@@ -2,12 +2,14 @@ using Harbourline.Connect.Core;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Hosting;
 
-var builder = FunctionsApplication.CreateBuilder(args);
+// <listing:program>
+var builder = FunctionsApplication.CreateBuilder(args);     // <1>
 
-// ASP.NET Core integration: HttpRequest and IActionResult in functions.
-builder.ConfigureFunctionsWebApplication();
+// ASP.NET Core integration: HttpRequest and IActionResult.
+builder.ConfigureFunctionsWebApplication();                 // <2>
 
-// Options, Dataverse client and services shared by every function.
-builder.Services.AddHarbourlineCore(builder.Configuration);
+// Options, Dataverse client and shared services.
+builder.Services.AddHarbourlineCore(builder.Configuration); // <3>
 
-builder.Build().Run();
+builder.Build().Run();                                      // <4>
+// </listing:program>
