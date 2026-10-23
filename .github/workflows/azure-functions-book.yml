@@ -34,12 +34,23 @@ jobs:
       # Build restores too: Azure.Functions.Sdk restores its generated
       # extensions project during the build.
       - name: Build
-        run: dotnet build HarbourlineConnect.slnx -c Release
+        run: |
+          set -o pipefail
+          dotnet build HarbourlineConnect.slnx -c Release 2>&1 \
+            | tee build.log \
+            || { grep -E 'error|Error' build.log | head -20 \
+                 | sed 's/^/::error title=Build::/'; exit 1; }
 
       - name: Test
-        run: >
-          dotnet test HarbourlineConnect.slnx -c Release --no-build
-          --logger "console;verbosity=normal"
+        run: |
+          set -o pipefail
+          dotnet test HarbourlineConnect.slnx -c Release --no-build \
+            --logger "console;verbosity=normal" 2>&1 \
+            | tee test.log \
+            || { grep -E 'error|Error|Failed|failed' test.log \
+                 | head -20 | sed 's/^/::error title=Test::/'; exit 1; }
+          grep -E 'Passed!|Failed!|Total tests' test.log \
+            | sed 's/^/::notice title=Tests::/' || true
 
       # Informational: lists packages with newer versions so the book's
       # version statement can be kept current. Never fails the build.
