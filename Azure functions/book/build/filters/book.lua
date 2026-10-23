@@ -112,8 +112,15 @@ local function code_block(cb)
   local include = cb.attributes["include"]
   if include then
     local region = cb.attributes["region"]
-    if not region then error("Listing " .. include .. " needs region=") end
-    cb.text = read_region(include, region)
+    if region then
+      cb.text = read_region(include, region)
+    else
+      -- No region: the whole file (used for JSON, which has no comments).
+      local file = io.open(code_root .. "/" .. include, "r")
+      if not file then error("Listing file not found: " .. include) end
+      cb.text = file:read("a"):gsub("\n+$", "")
+      file:close()
+    end
     cb.attributes["include"] = nil
     cb.attributes["region"] = nil
   end
