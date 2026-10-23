@@ -26,21 +26,27 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<HealthService>();
 
+        // <listing:dataverse-registration>
         services.AddOptions<DataverseOptions>()
-            .Bind(configuration.GetSection(DataverseOptions.SectionName))
-            .ValidateDataAnnotations()
+            .Bind(configuration.GetSection(
+                DataverseOptions.SectionName))
+            .ValidateDataAnnotations()                 // <1>
             .ValidateOnStart();
 
         services.TryAddSingleton<TokenCredential>(
-            _ => new DefaultAzureCredential());
+            _ => new DefaultAzureCredential());        // <2>
 
-        services.TryAddSingleton(sp => DataverseClientFactory.Create(
-            sp.GetRequiredService<IOptions<DataverseOptions>>().Value,
-            sp.GetRequiredService<TokenCredential>(),
-            sp.GetRequiredService<ILogger<ServiceClient>>()));
+        services.TryAddSingleton(sp =>                 // <3>
+            DataverseClientFactory.Create(
+                sp.GetRequiredService<
+                    IOptions<DataverseOptions>>().Value,
+                sp.GetRequiredService<TokenCredential>(),
+                sp.GetRequiredService<
+                    ILogger<ServiceClient>>()));
 
         services.TryAddSingleton<IOrganizationServiceAsync2>(
-            sp => sp.GetRequiredService<ServiceClient>());
+            sp => sp.GetRequiredService<ServiceClient>()); // <4>
+        // </listing:dataverse-registration>
 
         return services;
     }
