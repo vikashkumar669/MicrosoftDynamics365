@@ -23,19 +23,18 @@ defaults:
 
 jobs:
   build-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           global-json-file: 'Azure functions/global.json'
 
-      - name: Restore
-        run: dotnet restore HarbourlineConnect.slnx
-
+      # Build restores too: Azure.Functions.Sdk restores its generated
+      # extensions project during the build.
       - name: Build
-        run: dotnet build HarbourlineConnect.slnx -c Release --no-restore
+        run: dotnet build HarbourlineConnect.slnx -c Release
 
       - name: Test
         run: >
@@ -47,4 +46,8 @@ jobs:
       - name: Outdated package report
         if: always()
         continue-on-error: true
-        run: dotnet list HarbourlineConnect.slnx package --outdated
+        run: |
+          dotnet list HarbourlineConnect.slnx package --outdated \
+            | tee outdated.txt
+          grep '>' outdated.txt | sed 's/^ *> */::notice title=Outdated::/' \
+            || echo "::notice title=Outdated::All packages current"

@@ -20,13 +20,9 @@ steps:
       useGlobalJson: true
       workingDirectory: $(solutionDir)
 
-  - script: dotnet restore HarbourlineConnect.slnx
-    displayName: Restore
-    workingDirectory: $(solutionDir)
-
   - script: >
       dotnet build HarbourlineConnect.slnx
-      -c $(buildConfiguration) --no-restore
+      -c $(buildConfiguration)
     displayName: Build
     workingDirectory: $(solutionDir)
 
