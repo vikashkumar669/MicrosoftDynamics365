@@ -1,0 +1,34 @@
+# Azure DevOps alternative to the GitHub Actions workflow.
+# Create a pipeline in Azure DevOps that points at this file.
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include: ['Azure functions/*']
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  solutionDir: 'Azure functions'
+  buildConfiguration: Release
+
+steps:
+  - task: UseDotNet@2
+    displayName: Install .NET SDK from global.json
+    inputs:
+      useGlobalJson: true
+      workingDirectory: $(solutionDir)
+
+  - script: >
+      dotnet build HarbourlineConnect.slnx
+      -c $(buildConfiguration)
+    displayName: Build
+    workingDirectory: $(solutionDir)
+
+  # Tests run on Microsoft Testing Platform (see global.json "test").
+  - script: >
+      dotnet test --solution HarbourlineConnect.slnx
+      -c $(buildConfiguration) --no-build
+    displayName: Test
+    workingDirectory: $(solutionDir)
