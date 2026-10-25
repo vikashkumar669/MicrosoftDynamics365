@@ -1,0 +1,30 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B6875E19-27B4-4D42-B4C9-8DA4EE3E1FBA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "D365.Plugins", "src\D365.Plugins\D365.Plugins.csproj", "{BF7FD755-701F-43B4-B978-EE6392F72675}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF7FD755-701F-43B4-B978-EE6392F72675}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF7FD755-701F-43B4-B978-EE6392F72675}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF7FD755-701F-43B4-B978-EE6392F72675}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF7FD755-701F-43B4-B978-EE6392F72675}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BF7FD755-701F-43B4-B978-EE6392F72675} = {B6875E19-27B4-4D42-B4C9-8DA4EE3E1FBA}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4FFB088B-D27F-4CF1-8D70-32CB0C0EFF1B}
+	EndGlobalSection
+EndGlobal
