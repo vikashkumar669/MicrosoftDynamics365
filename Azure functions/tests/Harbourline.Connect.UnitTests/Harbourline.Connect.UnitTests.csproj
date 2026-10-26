@@ -13,9 +13,9 @@
     <!-- Runs on Microsoft Testing Platform (opted in via global.json). -->
     <PackageReference Include="xunit.v3" Version="4.0.2" />
     <PackageReference Include="NSubstitute" Version="6.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.13" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.13" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.13" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.14" />
   </ItemGroup>
 
   <ItemGroup>

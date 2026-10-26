@@ -38,7 +38,7 @@ jobs:
           set -o pipefail
           dotnet build HarbourlineConnect.slnx -c Release 2>&1 \
             | tee build.log \
-            || { grep -E ': (error|warning) ' build.log | sort -u \
+            || { grep -E ': error ' build.log | sort -u \
                  | sed -E 's#^.*/Azure functions/##' | head -120 \
                  | awk 'BEGIN{ORS="%0A"} {print}' \
                  | sed 's/^/::error title=Build::/'; echo; exit 1; }
