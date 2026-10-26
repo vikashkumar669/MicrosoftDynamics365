@@ -112,9 +112,9 @@ def ch05_identity():
     d.arrow([(100, 186), (100, 216)])
     d.container(230, 20, 160, 280, "Microsoft Entra ID",
                 kind="boundary")
-    d.node(245, 80, 130, 64, "Token", ["scope: org/.default"], kind="ms",
-           icon="appregistration")
-    d.node(245, 190, 130, 64, "Key Vault", ["secrets for", "others"],
+    d.node(245, 80, 130, 64, "Access token", ["for <org>/.default"],
+           kind="ms")
+    d.node(245, 190, 130, 64, "Key Vault", ["other secrets"],
            kind="ms", icon="keyvault")
     d.arrow([(190, 252), (215, 252), (215, 112), (241, 112)],
             label="ask", at=(215, 180))
