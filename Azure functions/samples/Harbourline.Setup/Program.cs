@@ -61,7 +61,8 @@ Console.WriteLine("Columns");
 // <listing:setup-columns>
 await schema.EnsureColumnAsync("hl_property", TextColumn("hl_PropertyCode",
     "Property code", 10, AttributeRequiredLevel.ApplicationRequired));
-await schema.EnsureColumnAsync("hl_property", TextColumn("hl_City", "City", 60));
+await schema.EnsureColumnAsync("hl_property",
+    TextColumn("hl_City", "City", 60));
 await schema.EnsureColumnAsync("hl_property",
     TextColumn("hl_Postcode", "Postcode", 10));
 await schema.EnsureColumnAsync("hl_property", new IntegerAttributeMetadata

@@ -191,6 +191,204 @@ def ch07_etag():
     return d
 
 
+# --------------------------------------------------------------- ch08
+@fig("ch08", "resilience")
+def ch08_resilience():
+    d = D.Diagram(640, 300, "A request passes through nested resilience "
+                  "strategies before it reaches LedgerOne; each one "
+                  "handles a different kind of failure")
+    d.node(10, 120, 100, 60, "LedgerOne", ["Client"], kind="ours")
+    layers = [
+        (130, 20, 380, 260, "Total timeout · 45 s"),
+        (150, 50, 340, 210, "Retry · 3 times, backoff + jitter"),
+        (170, 80, 300, 160, "Circuit breaker · opens on failures"),
+        (190, 110, 260, 110, "Attempt timeout · 10 s"),
+    ]
+    for x, y, w, h, label in layers:
+        d.container(x, y, w, h, label)
+    d.node(215, 150, 210, 50, "HttpClientHandler", ["one HTTP attempt"],
+           kind="ms")
+    d.node(530, 120, 100, 60, "LedgerOne", ["API"], kind="ext")
+    d.arrow([(110, 150), (211, 175)])
+    d.arrow([(425, 175), (526, 150)])
+    d.arrow([(580, 180), (580, 290), (320, 290), (320, 204)],
+            kind="fail", label="429 · 5xx · timeout → retry",
+            at=(450, 286))
+    d.save(out("ch08", "resilience"))
+    return d
+
+
+# --------------------------------------------------------------- ch09
+@fig("ch09", "paths")
+def ch09_paths():
+    d = D.Diagram(640, 330, "Four ways a Dataverse event can reach a "
+                  "function; Harbourline uses the asynchronous webhook "
+                  "and hands slow work to a queue")
+    d.node(10, 130, 120, 70, "Dataverse", ["lease", "updated"],
+           kind="ms", icon="dataverse")
+    rows = [
+        (20, "Webhook step", "sync or async · 60 s", "ours-path"),
+        (100, "Service Bus endpoint", "async only", None),
+        (180, "Plug-in calling out", "your C# · 2 min", None),
+        (260, "Power Automate flow", "custom connector", None),
+    ]
+    for y, title, sub, _ in rows:
+        d.node(180, y, 190, 56, title, [sub],
+               kind="accent" if y == 20 else "ms", title_size=12)
+        d.arrow([(130, 165), (155, 165), (155, y + 28), (176, y + 28)])
+    d.node(420, 20, 210, 56, "LeaseStatusWebhook", ["HTTP function"],
+           kind="ours")
+    d.node(420, 100, 210, 56, "Service Bus queue", ["lease-signing"],
+           kind="ms", icon="servicebus")
+    d.node(420, 180, 210, 56, "Any HTTPS endpoint", ["e.g. a function"],
+           kind="ms")
+    d.node(420, 260, 210, 56, "API Management", ["→ functions"],
+           kind="ms", icon="apim")
+    d.arrow([(370, 48), (416, 48)])
+    d.arrow([(525, 76), (525, 96)], label="queues work", at=(575, 90))
+    d.arrow([(370, 128), (416, 128)])
+    d.arrow([(370, 208), (416, 208)])
+    d.arrow([(370, 288), (416, 288)])
+    d.save(out("ch09", "paths"))
+    return d
+
+
+# --------------------------------------------------------------- ch10
+@fig("ch10", "watermark")
+def ch10_watermark():
+    d = D.Diagram(640, 260, "Each run reads from the last saved watermark "
+                  "minus a five-minute overlap, and saves a new watermark "
+                  "only when every row succeeded")
+    d.parts.append(f'<path d="M20 120H620" stroke="{D.SLATE}" '
+                   f'stroke-width="1.5" marker-end="url(#a)"/>')
+    d.text(620, 106, "time (UTC)", 11, anchor="end")
+    for x, label in [(120, "Mon 02:00"), (330, "Tue 02:00"),
+                     (540, "Wed 02:00")]:
+        d.parts.append(f'<path d="M{x} 112V128" stroke="{D.NAVY}" '
+                       f'stroke-width="2"/>')
+        d.text(x, 146, label, 11, 600, D.NAVY, "middle")
+    d.parts.append(f'<rect x="96" y="70" width="234" height="30" rx="4" '
+                   f'fill="{D.SKY}" stroke="{D.AZURE}"/>')
+    d.text(213, 90, "Tue run reads this window", 11, 600, D.NAVY, "middle")
+    d.parts.append(f'<rect x="96" y="104" width="24" height="12" '
+                   f'fill="#FFE2B8"/>')
+    d.text(60, 60, "5 min overlap", 11, 600, D.AMBER, "start")
+    d.arrow([(100, 64), (106, 102)], kind="fail")
+    d.node(150, 190, 170, 56, "Every row ok", ["save new watermark"],
+           kind="ours")
+    d.node(350, 190, 190, 56, "Any row failed", ["keep old watermark;",
+                                                  "next run retries"],
+           kind="warn")
+    d.arrow([(330, 154), (330, 170), (235, 170), (235, 186)])
+    d.arrow([(330, 170), (445, 170), (445, 186)], kind="fail")
+    d.save(out("ch10", "watermark"))
+    return d
+
+
+# --------------------------------------------------------------- ch11
+@fig("ch11", "topic")
+def ch11_topic():
+    d = D.Diagram(640, 300, "Dataverse publishes each account change once; "
+                  "every subscription gets its own copy, and messages "
+                  "that keep failing move to that subscription's "
+                  "dead-letter queue")
+    d.node(10, 110, 120, 70, "Dataverse", ["account", "changes"],
+           kind="ms", icon="dataverse")
+    d.container(160, 20, 250, 250, "Service Bus topic: account-events")
+    d.node(180, 70, 210, 56, "Subscription", ["ledgerone"], kind="ms",
+           icon="servicebus")
+    d.node(180, 180, 210, 56, "Subscription", ["audit (future)"],
+           kind="note")
+    d.arrow([(130, 145), (155, 145), (155, 98), (176, 98)],
+            label="SAS: Send only", at=(150, 60), anchor="middle")
+    d.arrow([(155, 145), (155, 208), (176, 208)])
+    d.node(440, 40, 190, 64, "AccountEvents", ["ToLedgerOne"],
+           kind="ours")
+    d.node(440, 140, 190, 56, "LedgerOne", ["customers"], kind="ext")
+    d.node(440, 224, 190, 56, "Dead-letter queue", ["ledgerone/$DLQ"],
+           kind="warn")
+    d.arrow([(390, 90), (436, 72)], label="identity", at=(413, 70))
+    d.arrow([(535, 104), (535, 136)])
+    d.arrow([(390, 110), (420, 110), (420, 252), (436, 252)],
+            kind="fail", label="permanent or 10th failure", at=(420, 210))
+    d.save(out("ch11", "topic"))
+    return d
+
+
+# --------------------------------------------------------------- ch12
+@fig("ch12", "signing")
+def ch12_signing():
+    d = D.Diagram(640, 330, "The orchestration sends the envelope, then "
+                  "waits for SignBridge's callback or a reminder timer, "
+                  "for up to nine days, without running any code while "
+                  "it waits")
+    d.node(10, 20, 150, 56, "lease-signing", ["queue (Ch. 9)"],
+           kind="ms", icon="servicebus")
+    d.node(10, 110, 150, 56, "Client function", ["StartLeaseSigning"],
+           kind="ours")
+    d.arrow([(85, 76), (85, 106)])
+    d.container(190, 10, 280, 310, "LeaseSigningOrchestration")
+    d.node(210, 50, 240, 50, "SendEnvelope", ["activity, retried"],
+           kind="ours")
+    d.node(210, 130, 240, 64, "Wait for first of:",
+           ["SignatureCompleted event", "timer (3 days)"], kind="accent")
+    d.node(210, 230, 110, 60, "Signed?", ["Active /", "Declined"],
+           kind="ours")
+    d.node(340, 230, 110, 60, "Timer", ["remind, or", "expire"],
+           kind="ours")
+    d.arrow([(160, 138), (185, 138), (185, 75), (206, 75)],
+            label="schedule", at=(185, 150))
+    d.arrow([(330, 100), (330, 126)])
+    d.arrow([(290, 194), (265, 226)])
+    d.arrow([(370, 194), (395, 226)])
+    d.arrow([(395, 230), (460, 162), (452, 162)], kind="async",
+            label="loop", at=(462, 214))
+    d.node(500, 50, 130, 56, "SignBridge", ["envelopes"], kind="ext")
+    d.node(500, 140, 130, 64, "SignBridge", ["Callback", "(HMAC)"],
+           kind="ours")
+    d.arrow([(450, 75), (496, 75)])
+    d.arrow([(565, 106), (565, 136)], label="tenant signs",
+            at=(565, 124))
+    d.arrow([(500, 172), (454, 162)], label="raise event", at=(478, 150))
+    d.save(out("ch12", "signing"))
+    return d
+
+
+# --------------------------------------------------------------- ch13
+@fig("ch13", "feeds")
+def ch13_feeds():
+    d = D.Diagram(640, 300, "A dropped file raises a blob event; the "
+                  "function streams it, upserts the valid rows and "
+                  "always writes a report, while unreadable files go to "
+                  "quarantine")
+    d.node(10, 30, 130, 56, "Partner", ["SFTP / upload"], kind="ext")
+    d.node(10, 120, 130, 64, "Blob storage", ["property-feeds"],
+           kind="ms")
+    d.node(10, 220, 130, 56, "Event Grid", ["BlobCreated"], kind="ms",
+           icon="eventgrid")
+    d.arrow([(75, 86), (75, 116)])
+    d.arrow([(75, 184), (75, 216)])
+    d.node(180, 120, 200, 64, "ImportPropertyFeed",
+           ["blob trigger (Event Grid)"], kind="ours", title_size=12)
+    d.arrow([(140, 248), (160, 248), (160, 152), (176, 152)],
+            label="webhook", at=(160, 210))
+    d.node(180, 30, 200, 56, "Reader + validator",
+           ["CSV · JSON · XML, streamed"], kind="ours")
+    d.arrow([(280, 120), (280, 90)], both=True)
+    d.node(420, 30, 210, 56, "Dataverse", ["UpsertMultiple by code"],
+           kind="ms", icon="dataverse")
+    d.node(420, 120, 210, 56, "feed-reports", ["<name>.report.csv"],
+           kind="ms", icon="blob")
+    d.node(420, 210, 210, 56, "feed-quarantine", ["unreadable files"],
+           kind="warn")
+    d.arrow([(380, 140), (416, 70)], label="valid rows", at=(398, 98))
+    d.arrow([(380, 152), (416, 148)])
+    d.arrow([(380, 170), (400, 170), (400, 238), (416, 238)],
+            kind="fail", label="bad file", at=(400, 210))
+    d.save(out("ch13", "feeds"))
+    return d
+
+
 def main(argv):
     wanted = set(argv)
     used = set()

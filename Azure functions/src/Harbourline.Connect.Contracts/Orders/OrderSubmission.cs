@@ -1,7 +1,7 @@
 namespace Harbourline.Connect.Contracts.Orders;
 
 // <listing:order-contract>
-/// <summary>A service order sent by a maintenance partner (Chapter 24).</summary>
+/// <summary>A service order from a maintenance partner.</summary>
 public sealed record OrderSubmission(
     string? OrderNumber,
     string? PropertyCode,
@@ -9,6 +9,6 @@ public sealed record OrderSubmission(
     decimal? Amount,
     string? PartnerId);
 
-/// <summary>What the intake API returns: accepted, not yet processed.</summary>
+/// <summary>Accepted, but not processed yet.</summary>
 public sealed record OrderAccepted(string OrderNumber, string StatusUrl);
 // </listing:order-contract>
