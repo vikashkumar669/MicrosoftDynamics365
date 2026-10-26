@@ -38,8 +38,10 @@ jobs:
           set -o pipefail
           dotnet build HarbourlineConnect.slnx -c Release 2>&1 \
             | tee build.log \
-            || { grep -E 'error|Error' build.log | head -20 \
-                 | sed 's/^/::error title=Build::/'; exit 1; }
+            || { grep -E ': (error|warning) ' build.log | sort -u \
+                 | sed -E 's#^.*/Azure functions/##' | head -120 \
+                 | awk 'BEGIN{ORS="%0A"} {print}' \
+                 | sed 's/^/::error title=Build::/'; echo; exit 1; }
 
       - name: Test
         run: |
@@ -47,10 +49,23 @@ jobs:
           dotnet test --solution HarbourlineConnect.slnx \
             -c Release --no-build 2>&1 \
             | tee test.log \
-            || { grep -E 'error|Error|Failed|failed' test.log \
-                 | head -20 | sed 's/^/::error title=Test::/'; exit 1; }
+            || { grep -E -A4 'failed|error|Error' test.log | head -150 \
+                 | awk 'BEGIN{ORS="%0A"} {print}' \
+                 | sed 's/^/::error title=Test::/'; echo; exit 1; }
           grep -iE 'passed|failed|total|succeeded' test.log | tail -5 \
             | sed 's/^/::notice title=Tests::/' || true
+
+      # Compiles the Bicep templates (Chapter 20) to catch syntax and
+      # type errors. Deployment happens in the deploy workflow.
+      - name: Bicep build
+        run: |
+          set -o pipefail
+          for f in infra/*.bicep; do
+            az bicep build --file "$f" --stdout > /dev/null 2> bicep.log \
+              || { awk 'BEGIN{ORS="%0A"} {print}' bicep.log \
+                   | sed "s|^|::error title=Bicep $f::|"; echo; exit 1; }
+          done
+          echo "::notice title=Bicep::all templates compiled"
 
       # Informational: lists packages with newer versions so the book's
       # version statement can be kept current. Never fails the build.
