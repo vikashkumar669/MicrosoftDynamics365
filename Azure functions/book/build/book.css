@@ -87,7 +87,7 @@ strong { font-weight: 600; }
 /* Chapter opener --------------------------------------------------- */
 .opener {
   page: opener;
-  break-before: right;
+  break-before: page;
   break-after: page;
   height: 9.25in;
   display: flex;
@@ -412,3 +412,22 @@ td code { font-size: 7.6pt; }
 
 /* References ------------------------------------------------------- */
 #references + ul { font: 400 8.5pt/1.45 var(--sans); }
+
+/* Appendix heading (no full-page opener) ---------------------------- */
+.appendix-head {
+  break-before: page;
+  border-bottom: 2pt solid var(--azure);
+  padding: 0 0 8pt;
+  margin: 0 0 14pt;
+}
+.appendix-label {
+  font: 600 8pt var(--sans);
+  letter-spacing: 1.6pt;
+  text-transform: uppercase;
+  color: var(--azure);
+  margin: 0 0 4pt;
+}
+.appendix-title {
+  color: var(--navy);
+  font-size: 22pt;
+}

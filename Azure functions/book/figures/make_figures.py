@@ -389,6 +389,327 @@ def ch13_feeds():
     return d
 
 
+# --------------------------------------------------------------- ch14
+@fig("ch14", "gateway")
+def ch14_gateway():
+    d = D.Diagram(640, 300, "Partners never reach the Function App "
+                  "directly: API Management checks their token, key and "
+                  "rate, then calls the app with its own identity")
+    d.node(10, 40, 120, 64, "Partner app", ["client", "credentials"],
+           kind="ext")
+    d.node(10, 180, 120, 64, "Microsoft", ["Entra ID"], kind="ms",
+           icon="appregistration")
+    d.arrow([(70, 176), (70, 108)], label="token", at=(70, 146))
+    d.container(160, 20, 220, 250, "API Management")
+    d.node(175, 55, 190, 40, "validate-azure-ad-token", [], kind="ms",
+           title_size=11)
+    d.node(175, 105, 190, 40, "subscription key", [], kind="ms",
+           title_size=11)
+    d.node(175, 155, 190, 40, "rate-limit 60/min", [], kind="ms",
+           title_size=11)
+    d.node(175, 205, 190, 40, "managed identity token", [], kind="ms",
+           title_size=11)
+    d.arrow([(130, 72), (171, 75)])
+    d.container(410, 20, 220, 250, "Behind the gateway", kind="boundary")
+    d.node(425, 55, 190, 56, "Easy Auth", ["only APIM's identity"],
+           kind="ms", icon="functions")
+    d.node(425, 135, 190, 56, "Harbourline", ["Connect functions"],
+           kind="ours")
+    d.node(425, 205, 190, 50, "Dataverse", ["application user"],
+           kind="ms", icon="dataverse")
+    d.arrow([(365, 225), (395, 225), (395, 83), (421, 83)])
+    d.arrow([(520, 111), (520, 131)])
+    d.arrow([(520, 191), (520, 201)])
+    d.arrow([(171, 175), (150, 175), (150, 96), (134, 96)], kind="fail",
+            label="401 · 429", at=(150, 140))
+    d.legend(292, [("ext", "external"), ("boundary", "auth boundary"),
+                   ("fail", "rejected early")])
+    d.save(out("ch14", "gateway"))
+    return d
+
+
+# --------------------------------------------------------------- ch15
+@fig("ch15", "bulk")
+def ch15_bulk():
+    d = D.Diagram(640, 300, "100,000 rows become 500 requests of 200 rows, "
+                  "sent a few at a time; a failed batch is split until "
+                  "the bad rows are found")
+    d.node(10, 110, 120, 70, "100,000", ["rows (CSV)"], kind="ext")
+    d.node(160, 20, 170, 56, "Batch 1", ["200 rows"], kind="ours")
+    d.node(160, 90, 170, 56, "Batch 2", ["200 rows"], kind="ours")
+    d.node(160, 160, 170, 56, "Batch …", ["parallelism = 4"],
+           kind="ours")
+    d.node(160, 230, 170, 56, "Batch 500", ["200 rows"], kind="ours")
+    for y in (48, 118, 188, 258):
+        d.arrow([(130, 145), (145, 145), (145, y), (156, y)])
+    d.container(370, 10, 260, 200, "Dataverse defaults, per user, 5 min")
+    d.node(385, 50, 230, 40, "≤ 6,000 requests", [], kind="ms",
+           title_size=12)
+    d.node(385, 100, 230, 40, "≤ 20 min execution time", [], kind="ms",
+           title_size=12)
+    d.node(385, 150, 230, 40, "≤ 52 concurrent requests", [], kind="ms",
+           title_size=12)
+    d.arrow([(330, 118), (366, 118)])
+    d.text(348, 140, "Upsert", 11, 600, D.NAVY, "middle")
+    d.text(348, 154, "Multiple", 11, 600, D.NAVY, "middle")
+    d.node(385, 230, 230, 56, "Batch fails?", ["split in half, retry,",
+                                                "report single bad rows"],
+           kind="warn")
+    d.arrow([(500, 210), (500, 226)], kind="fail")
+    d.save(out("ch15", "bulk"))
+    return d
+
+
+# --------------------------------------------------------------- ch16
+@fig("ch16", "migration")
+def ch16_migration():
+    d = D.Diagram(640, 250, "Extract, map, load in checkpointed batches, "
+                  "then reconcile: counts, per-row fingerprints and one "
+                  "checksum prove the target matches the source")
+    steps = [(10, "Extract", ["legacy CSV"], "ext"),
+             (170, "Map + validate", ["mapping spec", "as code"], "ours"),
+             (330, "Load", ["500-row batches", "checkpoint each"], "ours"),
+             (490, "Reconcile", ["counts, diffs,", "checksums"], "ours")]
+    for x, title, lines, kind in steps:
+        d.node(x, 40, 140, 72, title, lines, kind=kind)
+    for x in (150, 310, 470):
+        d.arrow([(x, 76), (x + 16, 76)])
+    d.node(170, 160, 140, 56, "Rejected rows", ["with reasons"],
+           kind="warn")
+    d.node(330, 160, 140, 56, "hl_syncstate", ["last batch done"],
+           kind="ms", icon="dataverse")
+    d.arrow([(240, 112), (240, 156)], kind="fail")
+    d.arrow([(400, 112), (400, 156)], both=True)
+    d.text(410, 236, "restart resumes after the last checkpoint", 11,
+           400, D.SLATE, "middle")
+    d.save(out("ch16", "migration"))
+    return d
+
+
+# --------------------------------------------------------------- ch17
+@fig("ch17", "excel")
+def ch17_excel():
+    d = D.Diagram(640, 230, "Export builds a formatted workbook from "
+                  "Dataverse; import reads finance's edited template, "
+                  "applies valid rows and returns every bad cell")
+    d.node(10, 30, 130, 64, "Finance", ["Excel"], kind="ext",
+           icon="excel")
+    d.node(190, 20, 190, 56, "ExportInvoices", ["GET …/invoices/2026-09"],
+           kind="ours", title_size=12)
+    d.node(190, 120, 190, 56, "ImportPrices", ["POST …/prices (xlsx)"],
+           kind="ours", title_size=12)
+    d.node(430, 20, 200, 56, "FinanceWorkbook", ["ClosedXML, formatted"],
+           kind="ours", title_size=12)
+    d.node(430, 120, 200, 56, "PriceImport", ["row-level validation"],
+           kind="ours", title_size=12)
+    d.node(430, 190, 200, 36, "Dataverse", [], kind="ms", icon="dataverse",
+           title_size=12)
+    d.arrow([(140, 52), (186, 48)])
+    d.arrow([(140, 72), (160, 72), (160, 148), (186, 148)])
+    d.arrow([(380, 48), (426, 48)])
+    d.arrow([(380, 148), (426, 148)])
+    d.arrow([(530, 176), (530, 186)])
+    d.arrow([(186, 160), (110, 160), (110, 98)], kind="fail",
+            label="report of bad cells", at=(130, 186))
+    d.save(out("ch17", "excel"))
+    return d
+
+
+# --------------------------------------------------------------- ch18
+@fig("ch18", "telemetry")
+def ch18_telemetry():
+    d = D.Diagram(640, 260, "The host and the worker both emit "
+                  "OpenTelemetry; one trace ID joins a request, its "
+                  "Dataverse calls, its logs and the messages it sends")
+    d.container(10, 20, 220, 220, "Function App")
+    d.node(25, 55, 190, 50, "Functions host", ["requests, triggers"],
+           kind="ms", icon="functions")
+    d.node(25, 120, 190, 50, "Worker: your code", ["logs, spans, metrics"],
+           kind="ours")
+    d.node(25, 185, 190, 44, "Azure Monitor", ["exporter"], kind="ms",
+           title_size=12)
+    d.arrow([(120, 105), (120, 116)])
+    d.arrow([(120, 170), (120, 181)])
+    d.node(270, 90, 170, 80, "Application", ["Insights", "(Log Analytics)"],
+           kind="ms", icon="appinsights")
+    d.arrow([(215, 207), (250, 207), (250, 130), (266, 130)],
+            label="Entra auth", at=(250, 168))
+    d.node(480, 20, 150, 56, "Workbook", ["operations view"], kind="ms",
+           icon="workbook")
+    d.node(480, 102, 150, 56, "Alert rules", ["KQL + metrics"], kind="ms")
+    d.node(480, 184, 150, 56, "Action group", ["email, Teams"], kind="ms")
+    d.arrow([(440, 112), (476, 48)])
+    d.arrow([(440, 130), (476, 130)])
+    d.arrow([(555, 158), (555, 180)])
+    d.save(out("ch18", "telemetry"))
+    return d
+
+
+# --------------------------------------------------------------- ch20
+@fig("ch20", "pipeline")
+def ch20_pipeline():
+    d = D.Diagram(640, 250, "One build, three environments: the same "
+                  "package and templates move from dev to prod, with an "
+                  "approval and a smoke test at each step")
+    d.node(10, 30, 130, 72, "Build", ["test, publish,", "artifact"],
+           kind="ours")
+    xs = [(180, "Dev", "auto"), (330, "Test", "approval"),
+          (480, "Prod", "approval")]
+    for x, env, gate in xs:
+        d.container(x, 10, 140, 190, env)
+        d.node(x + 12, 46, 116, 40, "Bicep", [], kind="ms",
+               title_size=12)
+        d.node(x + 12, 96, 116, 40, "Code deploy", [], kind="ms",
+               title_size=12)
+        d.node(x + 12, 146, 116, 40, "Smoke test", [], kind="ours",
+               title_size=12)
+        d.text(x + 70, 222, gate, 11, 600, D.SLATE, "middle")
+    d.arrow([(140, 66), (176, 66)])
+    d.arrow([(320, 66), (326, 66)])
+    d.arrow([(470, 66), (476, 66)])
+    d.text(320, 244, "OIDC: no Azure secret is stored in GitHub", 11, 400,
+           D.SLATE, "middle")
+    d.save(out("ch20", "pipeline"))
+    return d
+
+
+# --------------------------------------------------------------- ch21
+@fig("ch21", "sync")
+def ch21_sync():
+    d = D.Diagram(640, 270, "Changes flow both ways every five minutes; "
+                  "a stored hash marks what was last synced, so echoes "
+                  "of our own writes are skipped and real conflicts are "
+                  "merged by field owner")
+    d.node(10, 90, 150, 90, "Dataverse", ["account", "+ hl_synchash"],
+           kind="ms", icon="dataverse")
+    d.node(480, 90, 150, 90, "LedgerOne", ["customer", "+ modifiedUtc"],
+           kind="ext")
+    d.node(220, 20, 200, 64, "PushCustomers", ["change tracking →",
+                                               "upsert if hash differs"],
+           kind="ours", title_size=12)
+    d.node(220, 186, 200, 64, "PullCustomers", ["watermark →",
+                                                "ConflictResolver"],
+           kind="ours", title_size=12)
+    d.arrow([(85, 90), (85, 52), (216, 52)])
+    d.arrow([(420, 52), (555, 52), (555, 86)])
+    d.arrow([(555, 180), (555, 218), (424, 218)])
+    d.arrow([(216, 218), (85, 218), (85, 184)])
+    d.node(240, 104, 160, 60, "Field owners", ["name, city: Dataverse",
+                                               "email, phone: LedgerOne"],
+           kind="note", title_size=11)
+    d.save(out("ch21", "sync"))
+    return d
+
+
+# --------------------------------------------------------------- ch22
+@fig("ch22", "pack")
+def ch22_pack():
+    d = D.Diagram(640, 260, "The function reads Dataverse as the signed-in "
+                  "agent, so Dynamics 365 security decides what goes in "
+                  "the workbook; big files leave through a 15-minute "
+                  "read-only link")
+    d.node(10, 30, 130, 60, "Agent", ["signed in"], kind="ext",
+           icon="users")
+    d.node(180, 30, 190, 60, "Easy Auth", ["validates the token"],
+           kind="ms", icon="functions")
+    d.node(180, 120, 190, 60, "GetLeasePack", ["impersonate by", "object ID"],
+           kind="ours")
+    d.node(420, 120, 210, 60, "Dataverse", ["agent's roles and", "row access"],
+           kind="ms", icon="dataverse")
+    d.node(10, 190, 160, 56, "≤ 2 MB", ["file in response"], kind="ours")
+    d.node(200, 190, 190, 56, "lease-packs blob", ["user delegation SAS"],
+           kind="ms", icon="blob")
+    d.arrow([(140, 60), (176, 60)])
+    d.arrow([(275, 90), (275, 116)])
+    d.arrow([(370, 150), (416, 150)], both=True)
+    d.arrow([(180, 165), (90, 165), (90, 186)])
+    d.arrow([(295, 180), (295, 186)])
+    d.save(out("ch22", "pack"))
+    return d
+
+
+# --------------------------------------------------------------- ch24
+@fig("ch24", "orders")
+def ch24_orders():
+    d = D.Diagram(640, 290, "Orders are accepted in milliseconds, processed "
+                  "from a queue, retried when the failure is temporary, "
+                  "and parked with a reason when it isn't")
+    d.node(10, 40, 120, 60, "Partner", ["via APIM"], kind="ext")
+    d.node(160, 40, 140, 60, "SubmitOrder", ["validate → 202"],
+           kind="ours")
+    d.node(330, 40, 140, 60, "order-intake", ["dedupe by", "order number"],
+           kind="ms", icon="servicebus")
+    d.node(500, 40, 130, 60, "ProcessOrder", ["upsert, submit"],
+           kind="ours", title_size=12)
+    d.arrow([(130, 70), (156, 70)])
+    d.arrow([(300, 70), (326, 70)])
+    d.arrow([(470, 70), (496, 70)])
+    d.node(400, 150, 110, 56, "Dataverse", ["hl_service", "order"],
+           kind="ms")
+    d.node(520, 150, 110, 56, "LedgerOne", ["orders"], kind="ext")
+    d.arrow([(540, 100), (470, 146)])
+    d.arrow([(575, 100), (575, 146)])
+    d.node(200, 210, 170, 64, "Dead-letter queue", ["reason + description"],
+           kind="warn")
+    d.node(10, 210, 160, 64, "Ops: dlq-replay", ["after the fix"],
+           kind="ours")
+    d.arrow([(520, 100), (520, 120), (285, 120), (285, 206)], kind="fail",
+            label="permanent / 10th attempt", at=(400, 116))
+    d.arrow([(200, 242), (174, 242)], kind="fail")
+    d.arrow([(145, 210), (145, 14), (400, 14), (400, 36)],
+            label="resend", at=(220, 18))
+    d.save(out("ch24", "orders"))
+    return d
+
+
+# --------------------------------------------------------------- ch25
+@fig("ch25", "reference")
+def ch25_reference():
+    d = D.Diagram(640, 405, "Harbourline's final architecture: one Function "
+                  "App behind API Management, connected to Dataverse and "
+                  "partners through identities, queues and events, and "
+                  "observed end to end")
+    d.node(10, 20, 140, 50, "Partners", ["orders, search"], kind="ext")
+    d.node(10, 85, 140, 50, "Agents & portal", ["browser apps"],
+           kind="ext")
+    d.node(10, 150, 140, 50, "Partner feeds", ["CSV · JSON · XML"],
+           kind="ext")
+    d.node(10, 300, 140, 60, "Dataverse", ["Dynamics 365"], kind="ms",
+           icon="dataverse")
+    d.node(180, 20, 150, 50, "API Management", [], kind="ms")
+    d.node(180, 150, 150, 50, "Blob Storage", ["+ Event Grid"], kind="ms",
+           icon="blob")
+    d.node(180, 300, 150, 60, "Service Bus", ["topics, queues"],
+           kind="ms", icon="servicebus")
+    d.container(360, 20, 150, 340, "Function App (Flex)")
+    for i, label in enumerate(["HTTP APIs", "Webhooks", "Timers",
+                               "Queue handlers", "Blob imports",
+                               "Durable workflows"]):
+        d.node(372, 50 + i * 50, 126, 40, label, [], kind="ours",
+               title_size=11)
+    d.node(530, 20, 100, 56, "LedgerOne", ["finance"], kind="ext")
+    d.node(530, 90, 100, 56, "SignBridge", ["signatures"], kind="ext")
+    d.node(530, 170, 100, 50, "Key Vault", [], kind="ms", title_size=11)
+    d.node(530, 236, 100, 50, "App Insights", [], kind="ms",
+           title_size=11)
+    d.node(530, 300, 100, 60, "Durable Task", ["Scheduler"], kind="ms",
+           title_size=11)
+    d.arrow([(150, 45), (176, 45)])
+    d.arrow([(150, 110), (165, 110), (165, 55), (176, 55)])
+    d.arrow([(150, 175), (176, 175)])
+    d.arrow([(330, 45), (356, 45)])
+    d.arrow([(330, 175), (356, 175)])
+    d.arrow([(150, 330), (176, 330)])
+    d.arrow([(330, 330), (356, 330)])
+    d.arrow([(80, 296), (80, 230), (356, 230)], label="webhooks, SDK",
+            at=(215, 226))
+    d.arrow([(510, 48), (526, 48)])
+    d.arrow([(510, 118), (526, 118)])
+    d.legend(392, [("ours", "our code"), ("ext", "external")])
+    d.save(out("ch25", "reference"))
+    return d
+
+
 def main(argv):
     wanted = set(argv)
     used = set()

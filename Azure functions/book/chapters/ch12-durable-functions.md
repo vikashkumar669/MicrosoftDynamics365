@@ -82,7 +82,7 @@ docker run --name dtsemulator -d -p 8080:8080 -p 8082:8082 \
   mcr.microsoft.com/dts/dts-emulator:latest
 ```
 
-Port 8080 serves the app; the dashboard is at `http://localhost:8082`. The local connection string in `local.settings.sample.json` points at it: `Endpoint=http://localhost:8080;TaskHub=default;Authentication=None`. `host.json` selects the provider (@lst:hostjson in Chapter 11 shows the full file).
+Port 8080 serves the app; the dashboard is at `http://localhost:8082`. The local connection string in `local.settings.sample.json` points at it: `Endpoint=http://localhost:8080;TaskHub=default;Authentication=None`. `host.json` selects the provider; Chapter 11 shows the full file.
 
 ### Step 2 – Write the orchestrator
 
@@ -264,10 +264,10 @@ Answers are in Appendix G.
 ## References
 
 - [What are Durable Functions?](https://learn.microsoft.com/azure/durable-task/durable-functions/durable-functions-overview) – Microsoft Learn, checked 2026-10-27.
-- [Orchestrator function code constraints](https://learn.microsoft.com/azure/durable-task/durable-functions/durable-functions-code-constraints) – Microsoft Learn, checked 2026-10-27.
+- [Orchestrator code constraints](https://learn.microsoft.com/azure/durable-task/common/durable-task-code-constraints) – Microsoft Learn, checked 2026-10-27.
 - [Durable Task Scheduler](https://learn.microsoft.com/azure/durable-task/scheduler/durable-task-scheduler) – Microsoft Learn, checked 2026-10-27.
 - [Quickstart: configure a Durable Functions app to use Durable Task Scheduler](https://learn.microsoft.com/azure/durable-task/scheduler/quickstart-durable-task-scheduler) – Microsoft Learn, checked 2026-10-27.
-- [Handling external events in Durable Functions](https://learn.microsoft.com/azure/durable-task/durable-functions/durable-functions-external-events) – Microsoft Learn, checked 2026-10-27.
+- [Handling external events](https://learn.microsoft.com/azure/durable-task/common/durable-task-external-events) – Microsoft Learn, checked 2026-10-27.
 - [Rolling updates in Flex Consumption](https://learn.microsoft.com/azure/azure-functions/flex-consumption-site-updates) – Microsoft Learn, checked 2026-10-27.
 
 <!-- Glossary terms introduced in this chapter: Durable Functions, orchestrator function, activity function, client function, entity function, replay, deterministic, durable timer, external event, instance ID, Durable Task Scheduler, HMAC -->

@@ -59,7 +59,7 @@ A file with 2,000 good rows and 3 bad ones should import 2,000 rows and report 3
 
 - Chapter 7: `PropertyValidator` and `PropertyMapper`.
 - Chapter 15 explains the `BulkWriter` used here; this chapter treats it as "upsert these rows in batches".
-- A storage account with the containers from @lst:storage in Chapter 20, or created by hand.
+- A storage account with the containers created by the Bicep template in Chapter 20, or created by hand.
 
 ## Step-by-step implementation
 

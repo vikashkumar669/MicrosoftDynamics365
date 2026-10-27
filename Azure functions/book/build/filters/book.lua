@@ -302,7 +302,8 @@ local function docx_opener(doc)
     blocks:insert(styled({ pandoc.Para(md_inlines("Tested with: " ..
       stringify(m.versions))) }, "Opener Versions"))
   end
-  m.subtitle = pandoc.MetaInlines({ pandoc.Str("Chapter " .. chapter) })
+  local kind = m.appendix and "Appendix " or "Chapter "
+  m.subtitle = pandoc.MetaInlines({ pandoc.Str(kind .. chapter) })
   blocks:extend(doc.blocks)
   return pandoc.Pandoc(blocks, m)
 end
@@ -317,6 +318,8 @@ return {
       local n = tonumber(chapter)
       if n then
         m["chapter-padded"] = pandoc.MetaString(string.format("%02d", n))
+      else
+        m["chapter-padded"] = pandoc.MetaString(chapter)
       end
       return m
     end,

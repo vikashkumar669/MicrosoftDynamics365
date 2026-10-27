@@ -4,7 +4,8 @@ Markdown sources for *Azure Functions for Microsoft Dynamics 365 & Power Platfor
 
 | Path | Contents |
 | --- | --- |
-| `chapters/` | One Markdown file per chapter (`ch01-introduction.md` …) |
+| `chapters/` | One Markdown file per chapter (`ch01-…` to `ch25-…`) and appendix (`appA-…` to `appI-…`) |
+| `front/` | Preface |
 | `figures/` | Diagrams (Mermaid / draw.io sources and rendered SVG) and screenshots |
 | `capture-plan.csv` | Every screenshot to capture, with path, annotations and caption |
 | `out/` | Build output (DOCX, PDF) – git-ignored |
@@ -17,8 +18,10 @@ Markdown sources for *Azure Functions for Microsoft Dynamics 365 & Power Platfor
 
 ```bash
 # Needs pandoc 3.x, WeasyPrint, cairosvg, and Mermaid CLI (mmdc) for .mmd figures
-book/build/build.sh book/chapters/ch06-sample.md
-# -> book/out/ch06-sample.pdf (print layout) and .docx (editable manuscript)
+book/build/build.sh book/chapters/*.md          # each chapter and appendix
+python3 book/figures/make_figures.py             # diagrams (needs ICON_DIR)
+python3 book/build/assemble.py                   # whole book: PDF + DOCX
+# -> book/out/Azure-Functions-for-Dynamics-365.pdf and .docx
 ```
 
 Code listings are not typed into chapters by hand: they are pulled from the compiled projects in `../src` by `// <listing id>` region markers, so the printed code always matches code that CI has built.
